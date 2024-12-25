@@ -1,7 +1,7 @@
 // Admin.js
 import React, { useState } from "react";
 import { db } from "./firebase"; // Firestore設定ファイルのインポート
-import { doc, setDoc, getDoc, collection, query, where, getDocs, deleteField } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs, deleteField } from "firebase/firestore";
 
 
 const Admin = () => {
