@@ -229,7 +229,6 @@ const App = () => {
   };
 
   return (
-    <Router>
       <div
         style={{
           // 背景にグラデーションを敷いて雰囲気UP
@@ -441,7 +440,6 @@ const App = () => {
           <Route path="/clear" element={<ClearPage />} />
         </Routes>
       </div>
-    </Router>
   );
 };
 
