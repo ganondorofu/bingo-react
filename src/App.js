@@ -13,7 +13,7 @@ import {
   setDoc,
   deleteField
 } from "firebase/firestore";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import Admin from "./Admin"; // 管理者設定ページのインポート
 
 const App = () => {
@@ -102,38 +102,6 @@ const App = () => {
     return () => unsubscribe();
   }, []); // isAnimating を依存配列から削除
 
-  // アプリ起動時にFirestoreからデータを取得し、存在する場合はリセット（開発環境のみ）
-  useEffect(() => {
-    const resetData = async () => {
-      if (process.env.NODE_ENV !== "development") return; // 開発環境のみリセット
-
-      try {
-        const querySnapshot = await getDocs(numbersCollection);
-        const batch = writeBatch(db);
-
-        querySnapshot.forEach((documentSnapshot) => {
-          batch.delete(doc(db, "bingoNumbers", documentSnapshot.id));
-        });
-
-        await batch.commit();
-
-        // 初期化
-        const allNumbers = Array.from({ length: 75 }, (_, i) => i + 1);
-        setRemainingNumbers(allNumbers);
-        setNumbers([]);
-        setCurrentNumber(null);
-        setDisplayedNumber(null);
-        setError(null);
-      } catch (error) {
-        console.error("データのリセットに失敗しました:", error);
-        setError("データのリセットに失敗しました。再試行してください。");
-      }
-    };
-
-    resetData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // 番号を生成し、Firestoreに保存する関数
   const generateNumber = async () => {
     if (remainingNumbers.length === 0 || isAnimating) return; // すべて生成済みまたはアニメーション中の場合はreturn
@@ -186,6 +154,80 @@ const App = () => {
     }
   }, [isAnimating, displayedNumber]);
 
+  // Firestoreからデータをリセットする関数
+  const resetData = async () => {
+    try {
+      const querySnapshot = await getDocs(numbersCollection);
+      const batch = writeBatch(db);
+
+      querySnapshot.forEach((documentSnapshot) => {
+        batch.delete(doc(db, "bingoNumbers", documentSnapshot.id));
+      });
+
+      await batch.commit();
+
+      // 初期化
+      const allNumbers = Array.from({ length: 75 }, (_, i) => i + 1);
+      setRemainingNumbers(allNumbers);
+      setNumbers([]);
+      setCurrentNumber(null);
+      setDisplayedNumber(null);
+      setError(null);
+
+      // FirestoreのsettingsからnextNumberを削除
+      await setDoc(settingsDocRef, { number: deleteField() }, { merge: true });
+
+      return { success: true };
+    } catch (error) {
+      console.error("データのリセットに失敗しました:", error);
+      setError("データのリセットに失敗しました。再試行してください。");
+      return { success: false, error };
+    }
+  };
+
+  // ClearPage コンポーネント: /clear パスにアクセスしたときにデータをリセット
+  const ClearPage = () => {
+    const [status, setStatus] = useState("リセット中...");
+    const navigate = useNavigate();
+
+    useEffect(() => {
+      const performReset = async () => {
+        const result = await resetData();
+        if (result.success) {
+          setStatus("データを正常にリセットしました。");
+        } else {
+          setStatus("データのリセットに失敗しました。");
+        }
+        // 3秒後にホームページにリダイレクト
+        setTimeout(() => {
+          navigate("/");
+        }, 3000);
+      };
+
+      performReset();
+    }, [navigate]);
+
+    return (
+      <div
+        style={{
+          background: "linear-gradient(135deg, #ffcc00 0%, #ff6600 100%)",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          textAlign: "center",
+          padding: "20px",
+          fontFamily: "Arial, sans-serif",
+          color: "#333",
+        }}
+      >
+        <h1 style={{ color: "#fff", textShadow: "2px 2px #333" }}>データのリセット</h1>
+        <p style={{ color: "#fff", marginTop: "20px" }}>{status}</p>
+      </div>
+    );
+  };
+
   return (
     <Router>
       <div
@@ -199,8 +241,6 @@ const App = () => {
           color: "#333",
         }}
       >
-        {/* ナビゲーションバーを削除しました */}
-
         <Routes>
           {/* スタイルありのメインページ */}
           <Route
@@ -397,6 +437,8 @@ const App = () => {
           />
           {/* 管理者設定ページ */}
           <Route path="/admin" element={<Admin />} />
+          {/* データクリアページ */}
+          <Route path="/clear" element={<ClearPage />} />
         </Routes>
       </div>
     </Router>
