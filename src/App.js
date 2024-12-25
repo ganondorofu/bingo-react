@@ -1,6 +1,6 @@
 // App.js
 import React, { useState, useEffect, useRef } from "react";
-import { db } from "./firebase"; // Firestore設定ファイルのインポート
+import { db } from "./firebase";
 import {
   collection,
   addDoc,
