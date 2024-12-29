@@ -11,9 +11,9 @@ import {
   query,
   getDoc,
   setDoc,
-  deleteField
+  deleteField,
 } from "firebase/firestore";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import Admin from "./Admin"; // 管理者設定ページのインポート
 
 const App = () => {
@@ -229,6 +229,7 @@ const App = () => {
   };
 
   return (
+    <Router basename="/bingo-react">
       <div
         style={{
           // 背景にグラデーションを敷いて雰囲気UP
@@ -240,8 +241,6 @@ const App = () => {
           color: "#333",
         }}
       >
-        
-        <Router basename="/bingo-react">
         <Routes>
           {/* スタイルありのメインページ */}
           <Route
@@ -280,15 +279,13 @@ const App = () => {
                       <span style={{ marginRight: "10px" }}>{getBingoLetter(displayedNumber)}</span>
                       {displayedNumber}
                     </>
+                  ) : currentNumber !== null ? (
+                    <>
+                      <span style={{ marginRight: "10px" }}>{getBingoLetter(currentNumber)}</span>
+                      {currentNumber}
+                    </>
                   ) : (
-                    currentNumber !== null ? (
-                      <>
-                        <span style={{ marginRight: "10px" }}>{getBingoLetter(currentNumber)}</span>
-                        {currentNumber}
-                      </>
-                    ) : (
-                      "???"
-                    )
+                    "???"
                   )}
                 </div>
 
@@ -322,8 +319,8 @@ const App = () => {
                   {remainingNumbers.length === 0
                     ? "番号がすべて生成されました"
                     : isAnimating
-                      ? "生成中..."
-                      : "番号を生成"}
+                    ? "生成中..."
+                    : "番号を生成"}
                 </button>
 
                 {/* エラーメッセージの表示 */}
@@ -400,7 +397,9 @@ const App = () => {
                 {/* 最新の番号を表示する部分 */}
                 <div>
                   {currentNumber !== null ? (
-                    <span>{getBingoLetter(currentNumber)}-{currentNumber}</span>
+                    <span>
+                      {getBingoLetter(currentNumber)}-{currentNumber}
+                    </span>
                   ) : (
                     "???"
                   )}
@@ -411,8 +410,8 @@ const App = () => {
                   {remainingNumbers.length === 0
                     ? "番号がすべて生成されました"
                     : isAnimating
-                      ? "生成中..."
-                      : "番号を生成"}
+                    ? "生成中..."
+                    : "番号を生成"}
                 </button>
 
                 {/* エラーメッセージの表示 */}
@@ -440,9 +439,11 @@ const App = () => {
           <Route path="/admin" element={<Admin />} />
           {/* データクリアページ */}
           <Route path="/clear" element={<ClearPage />} />
+          {/* 不明なルートをホームにリダイレクト */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        </Router>;
       </div>
+    </Router>
   );
 };
 
