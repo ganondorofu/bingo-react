@@ -435,9 +435,9 @@ const App = () => {
             }
           />
           {/* 管理者設定ページ */}
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/bingo-react/admin" element={<Admin />} />
           {/* データクリアページ */}
-          <Route path="/clear" element={<ClearPage />} />
+          <Route path="/bingo-react/clear" element={<ClearPage />} />
         </Routes>
       </div>
   );
