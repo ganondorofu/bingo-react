@@ -240,6 +240,8 @@ const App = () => {
           color: "#333",
         }}
       >
+        
+        <Router basename="/bingo-react">
         <Routes>
           {/* スタイルありのメインページ */}
           <Route
@@ -439,6 +441,7 @@ const App = () => {
           {/* データクリアページ */}
           <Route path="/bingo-react/clear" element={<ClearPage />} />
         </Routes>
+        </Router>;
       </div>
   );
 };
