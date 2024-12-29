@@ -13,7 +13,7 @@ import {
   setDoc,
   deleteField,
 } from "firebase/firestore";
-import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import Admin from "./Admin"; // 管理者設定ページのインポート
 
 const App = () => {
@@ -229,221 +229,219 @@ const App = () => {
   };
 
   return (
-    <Router basename="/bingo-react">
-      <div
-        style={{
-          // 背景にグラデーションを敷いて雰囲気UP
-          background: "linear-gradient(135deg, #ffcc00 0%, #ff6600 100%)",
-          minHeight: "100vh",
-          textAlign: "center",
-          padding: "20px",
-          fontFamily: "Arial, sans-serif",
-          color: "#333",
-        }}
-      >
-        <Routes>
-          {/* スタイルありのメインページ */}
-          <Route
-            path="/"
-            element={
-              <>
-                {/* タイトル部分 */}
-                <h1 style={{ marginBottom: "20px", color: "#fff", textShadow: "2px 2px #333" }}>
-                  BINGO番号生成器
-                </h1>
+    <div
+      style={{
+        // 背景にグラデーションを敷いて雰囲気UP
+        background: "linear-gradient(135deg, #ffcc00 0%, #ff6600 100%)",
+        minHeight: "100vh",
+        textAlign: "center",
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+        color: "#333",
+      }}
+    >
+      <Routes>
+        {/* スタイルありのメインページ */}
+        <Route
+          path="/"
+          element={
+            <>
+              {/* タイトル部分 */}
+              <h1 style={{ marginBottom: "20px", color: "#fff", textShadow: "2px 2px #333" }}>
+                BINGO番号生成器
+              </h1>
 
-                {/* 最新の番号を大きく表示する部分 */}
+              {/* 最新の番号を大きく表示する部分 */}
+              <div
+                style={{
+                  margin: "0 auto 20px auto",
+                  fontSize: "3em",
+                  fontWeight: "bold",
+                  color: "#ffffff",
+                  minHeight: "80px",
+                  width: "220px",
+                  height: "100px",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
+                  transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out",
+                  // animateがtrueの場合は拡大表示、それ以外は通常サイズ
+                  transform: isAnimating ? "scale(1.3)" : "scale(1)",
+                  opacity: isAnimating ? 0.8 : 1,
+                  background: "#ff5722",
+                }}
+              >
+                {isAnimating ? (
+                  <>
+                    <span style={{ marginRight: "10px" }}>{getBingoLetter(displayedNumber)}</span>
+                    {displayedNumber}
+                  </>
+                ) : currentNumber !== null ? (
+                  <>
+                    <span style={{ marginRight: "10px" }}>{getBingoLetter(currentNumber)}</span>
+                    {currentNumber}
+                  </>
+                ) : (
+                  "???"
+                )}
+              </div>
+
+              {/* 番号を生成するボタン */}
+              <button
+                onClick={generateNumber}
+                style={{
+                  padding: "12px 24px",
+                  fontSize: "1.2em",
+                  backgroundColor: "#2196F3",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "5px",
+                  cursor: remainingNumbers.length === 0 || isAnimating ? "not-allowed" : "pointer",
+                  boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
+                  transition: "background-color 0.3s ease, transform 0.2s",
+                  marginBottom: "20px",
+                }}
+                onMouseEnter={(e) => {
+                  if (remainingNumbers.length > 0 && !isAnimating) {
+                    e.currentTarget.style.backgroundColor = "#1976D2";
+                    e.currentTarget.style.transform = "scale(1.05)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#2196F3";
+                  e.currentTarget.style.transform = "scale(1)";
+                }}
+                disabled={remainingNumbers.length === 0 || isAnimating}
+              >
+                {remainingNumbers.length === 0
+                  ? "番号がすべて生成されました"
+                  : isAnimating
+                  ? "生成中..."
+                  : "番号を生成"}
+              </button>
+
+              {/* エラーメッセージの表示 */}
+              {error && (
+                <p style={{ color: "red", marginTop: "20px" }}>
+                  {error}
+                </p>
+              )}
+
+              {/* 生成済みの番号一覧 */}
+              <div style={{ marginTop: "40px" }}>
+                <h2 style={{ marginBottom: "10px", color: "#fff", textShadow: "1px 1px #333" }}>
+                  生成済みの番号
+                </h2>
+                {numbers.length === 0 && (
+                  <p style={{ color: "#fff" }}>まだ番号は生成されていません</p>
+                )}
                 <div
                   style={{
-                    margin: "0 auto 20px auto",
-                    fontSize: "3em",
-                    fontWeight: "bold",
-                    color: "#ffffff",
-                    minHeight: "80px",
-                    width: "220px",
-                    height: "100px",
-                    borderRadius: "12px",
-                    display: "flex",
-                    alignItems: "center",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
+                    gap: "15px",
                     justifyContent: "center",
-                    boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
-                    transition: "transform 0.3s ease-in-out, opacity 0.3s ease-in-out",
-                    // animateがtrueの場合は拡大表示、それ以外は通常サイズ
-                    transform: isAnimating ? "scale(1.3)" : "scale(1)",
-                    opacity: isAnimating ? 0.8 : 1,
-                    background: "#ff5722",
+                    marginTop: "20px",
+                    maxWidth: "800px",
+                    margin: "20px auto",
                   }}
                 >
-                  {isAnimating ? (
-                    <>
-                      <span style={{ marginRight: "10px" }}>{getBingoLetter(displayedNumber)}</span>
-                      {displayedNumber}
-                    </>
-                  ) : currentNumber !== null ? (
-                    <>
-                      <span style={{ marginRight: "10px" }}>{getBingoLetter(currentNumber)}</span>
-                      {currentNumber}
-                    </>
-                  ) : (
-                    "???"
-                  )}
+                  {numbers.map((num, index) => {
+                    const letter = getBingoLetter(num);
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          lineHeight: "80px",
+                          borderRadius: "10px",
+                          backgroundColor: bingoColors[letter],
+                          fontSize: "1.5em",
+                          fontWeight: "bold",
+                          color: "#fff",
+                          border: "2px solid #333",
+                          textAlign: "center",
+                          boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.2)",
+                          transition: "transform 0.2s, box-shadow 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.1)";
+                          e.currentTarget.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.4)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.boxShadow = "0px 2px 5px rgba(0, 0, 0, 0.2)";
+                        }}
+                      >
+                        {letter}-{num}
+                      </div>
+                    );
+                  })}
                 </div>
+              </div>
+            </>
+          }
+        />
+        {/* ノースタイルページの追加 */}
+        <Route
+          path="/nostyle"
+          element={
+            <>
+              {/* タイトル部分 */}
+              <h1>BINGO番号生成器</h1>
 
-                {/* 番号を生成するボタン */}
-                <button
-                  onClick={generateNumber}
-                  style={{
-                    padding: "12px 24px",
-                    fontSize: "1.2em",
-                    backgroundColor: "#2196F3",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: remainingNumbers.length === 0 || isAnimating ? "not-allowed" : "pointer",
-                    boxShadow: "0px 3px 5px rgba(0, 0, 0, 0.2)",
-                    transition: "background-color 0.3s ease, transform 0.2s",
-                    marginBottom: "20px",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (remainingNumbers.length > 0 && !isAnimating) {
-                      e.currentTarget.style.backgroundColor = "#1976D2";
-                      e.currentTarget.style.transform = "scale(1.05)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = "#2196F3";
-                    e.currentTarget.style.transform = "scale(1)";
-                  }}
-                  disabled={remainingNumbers.length === 0 || isAnimating}
-                >
-                  {remainingNumbers.length === 0
-                    ? "番号がすべて生成されました"
-                    : isAnimating
-                    ? "生成中..."
-                    : "番号を生成"}
-                </button>
-
-                {/* エラーメッセージの表示 */}
-                {error && (
-                  <p style={{ color: "red", marginTop: "20px" }}>
-                    {error}
-                  </p>
+              {/* 最新の番号を表示する部分 */}
+              <div>
+                {currentNumber !== null ? (
+                  <span>
+                    {getBingoLetter(currentNumber)}-{currentNumber}
+                  </span>
+                ) : (
+                  "???"
                 )}
+              </div>
 
-                {/* 生成済みの番号一覧 */}
-                <div style={{ marginTop: "40px" }}>
-                  <h2 style={{ marginBottom: "10px", color: "#fff", textShadow: "1px 1px #333" }}>
-                    生成済みの番号
-                  </h2>
-                  {numbers.length === 0 && (
-                    <p style={{ color: "#fff" }}>まだ番号は生成されていません</p>
-                  )}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fill, minmax(80px, 1fr))",
-                      gap: "15px",
-                      justifyContent: "center",
-                      marginTop: "20px",
-                      maxWidth: "800px",
-                      margin: "20px auto",
-                    }}
-                  >
-                    {numbers.map((num, index) => {
-                      const letter = getBingoLetter(num);
-                      return (
-                        <div
-                          key={index}
-                          style={{
-                            width: "80px",
-                            height: "80px",
-                            lineHeight: "80px",
-                            borderRadius: "10px",
-                            backgroundColor: bingoColors[letter],
-                            fontSize: "1.5em",
-                            fontWeight: "bold",
-                            color: "#fff",
-                            border: "2px solid #333",
-                            textAlign: "center",
-                            boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.2)",
-                            transition: "transform 0.2s, box-shadow 0.2s",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.transform = "scale(1.1)";
-                            e.currentTarget.style.boxShadow = "0px 4px 10px rgba(0, 0, 0, 0.4)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.transform = "scale(1)";
-                            e.currentTarget.style.boxShadow = "0px 2px 5px rgba(0, 0, 0, 0.2)";
-                          }}
-                        >
-                          {letter}-{num}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            }
-          />
-          {/* ノースタイルページの追加 */}
-          <Route
-            path="/nostyle"
-            element={
-              <>
-                {/* タイトル部分 */}
-                <h1>BINGO番号生成器</h1>
+              {/* 番号を生成するボタン */}
+              <button onClick={generateNumber} disabled={remainingNumbers.length === 0 || isAnimating}>
+                {remainingNumbers.length === 0
+                  ? "番号がすべて生成されました"
+                  : isAnimating
+                  ? "生成中..."
+                  : "番号を生成"}
+              </button>
 
-                {/* 最新の番号を表示する部分 */}
-                <div>
-                  {currentNumber !== null ? (
-                    <span>
-                      {getBingoLetter(currentNumber)}-{currentNumber}
-                    </span>
-                  ) : (
-                    "???"
-                  )}
-                </div>
+              {/* エラーメッセージの表示 */}
+              {error && <p>{error}</p>}
 
-                {/* 番号を生成するボタン */}
-                <button onClick={generateNumber} disabled={remainingNumbers.length === 0 || isAnimating}>
-                  {remainingNumbers.length === 0
-                    ? "番号がすべて生成されました"
-                    : isAnimating
-                    ? "生成中..."
-                    : "番号を生成"}
-                </button>
-
-                {/* エラーメッセージの表示 */}
-                {error && <p>{error}</p>}
-
-                {/* 生成済みの番号一覧 */}
-                <div>
-                  <h2>生成済みの番号</h2>
-                  {numbers.length === 0 && <p>まだ番号は生成されていません</p>}
-                  <ul>
-                    {numbers.map((num, index) => {
-                      const letter = getBingoLetter(num);
-                      return (
-                        <li key={index}>
-                          {letter}-{num}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </>
-            }
-          />
-          {/* 管理者設定ページ */}
-          <Route path="/admin" element={<Admin />} />
-          {/* データクリアページ */}
-          <Route path="/clear" element={<ClearPage />} />
-          {/* 不明なルートをホームにリダイレクト */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
-    </Router>
+              {/* 生成済みの番号一覧 */}
+              <div>
+                <h2>生成済みの番号</h2>
+                {numbers.length === 0 && <p>まだ番号は生成されていません</p>}
+                <ul>
+                  {numbers.map((num, index) => {
+                    const letter = getBingoLetter(num);
+                    return (
+                      <li key={index}>
+                        {letter}-{num}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </>
+          }
+        />
+        {/* 管理者設定ページ */}
+        <Route path="/admin" element={<Admin />} />
+        {/* データクリアページ */}
+        <Route path="/clear" element={<ClearPage />} />
+        {/* 不明なルートをホームにリダイレクト */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </div>
   );
 };
 
