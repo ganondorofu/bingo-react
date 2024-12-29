@@ -240,7 +240,6 @@ const App = () => {
         color: "#333",
       }}
     >
-      <BrowserRouter basename="/bingo-react">
       <Routes>
         {/* スタイルありのメインページ */}
         <Route
@@ -442,7 +441,6 @@ const App = () => {
         {/* 不明なルートをホームにリダイレクト */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      </BrowserRouter>
     </div>
   );
 };
