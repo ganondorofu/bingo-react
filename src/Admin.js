@@ -32,7 +32,7 @@ const Admin = () => {
 
       // Firestoreに次の番号を保存
       await setDoc(settingsDocRef, { number: num }, { merge: true });
-      setMessage(`次の番号として ${num} を設定しました。`);
+      setMessage(`${num} `);
       setNextNumber("");
     } catch (error) {
       console.error("番号の設定に失敗しました:", error);
@@ -55,7 +55,6 @@ const Admin = () => {
   return (
     <div style={{ backgroundColor: "white", minHeight: "100vh", padding: "20px" }}>
       <form onSubmit={handleSubmit}>
-        <label htmlFor="nextNumber">次に出る番号を設定:</label>
         <br />
         <input
           type="number"
@@ -68,9 +67,9 @@ const Admin = () => {
           required
         />
         <br />
-        <button type="submit">設定</button>
+        <button type="submit"></button>
       </form>
-      <button onClick={handleClear}>設定をクリア</button>
+      <button onClick={handleClear}></button>
       {message && <p>{message}</p>}
     </div>
   );
